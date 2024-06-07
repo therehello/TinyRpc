@@ -1,0 +1,7 @@
+file(GLOB TINYRPC_COMMON_SOURCES "*.cc")
+
+add_library(tinyrpc_common OBJECT ${TINYRPC_COMMON_SOURCES})
+
+set(ALL_OBJECT_FILES
+    ${ALL_OBJECT_FILES} $<TARGET_OBJECTS:tinyrpc_common>
+    PARENT_SCOPE)
