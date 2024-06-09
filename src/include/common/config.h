@@ -16,7 +16,8 @@ class Config {
 
   auto GetLogLevel() -> std::string { return log_level_; }
 
-  Config(Config &config) = delete;
+  Config(Config &) = delete;
+  Config(Config &&) = delete;
 
  private:
   explicit Config(const std::string &xml_file);

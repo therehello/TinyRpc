@@ -6,14 +6,13 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 #include "common/config.h"
 #include "common/util.h"
 
 namespace tinyrpc {
-
-static std::shared_ptr<Logger> logger;
 
 auto LogLevelToString(LogLevel level) -> std::string {
   switch (level) {
@@ -58,20 +57,15 @@ auto LogEvent(LogLevel level, const std::string &file_name,
 }
 
 auto Logger::GetGlobaLogger() -> std::shared_ptr<Logger> {
-  if (logger == nullptr) {
-    logger = std::shared_ptr<Logger>(
-        new Logger(StringToLogLevel(Config::GetGlobalConfig()->GetLogLevel())));
-  }
+  static std::shared_ptr<Logger> logger(
+      new Logger(StringToLogLevel(Config::GetGlobalConfig()->GetLogLevel())));
   return logger;
 }
 
-void Logger::PushLog(const std::string &event) { buffer_.push(event); }
-
-void Logger::Print() {
-  while (!buffer_.empty()) {
-    std::cout << buffer_.front();
-    buffer_.pop();
-  }
+void Logger::PushLog(const std::string &event) {
+  std::lock_guard<std::mutex> guard(lock_);
+  std::cout << event;
+  buffer_.push(event);
 }
 
 }  // namespace tinyrpc

@@ -10,19 +10,26 @@ namespace tinyrpc {
 
 static std::shared_ptr<Config> config;
 
-auto Config::GetGlobalConfig() -> std::shared_ptr<Config> { return config; }
+auto Config::GetGlobalConfig() -> std::shared_ptr<Config> {
+  if (config == nullptr) {
+    std::cerr << "Error: Configuration file path not provided. Please use "
+                 "tinyrpc::Config::SetGlobalConfig to set the configuration "
+                 "file path "
+                 "before continuing.\n";
+    exit(1);
+  }
+  return config;
+}
 
 void Config::SetGlobalConfig(const std::string &xml_file) {
-  if (!config) {
-    config = std::shared_ptr<Config>(new Config(xml_file));
-  }
+  config = std::shared_ptr<Config>(new Config(xml_file));
 }
 
 static auto GetSonNode(auto &father,
                        const std::string &name) -> tinyxml2::XMLElement * {
   auto son = father->FirstChildElement(name.c_str());
   if (!son) {
-    std::cout << std::format(
+    std::cerr << std::format(
         "Start TinyRpc server error, failed to read node {}\n", name);
     exit(1);
   }
@@ -32,7 +39,7 @@ static auto GetSonNode(auto &father,
 Config::Config(const std::string &xml_file) {
   auto doc = std::make_unique<tinyxml2::XMLDocument>();
   if (doc->LoadFile(xml_file.c_str()) != 0) {
-    std::cout << std::format(
+    std::cerr << std::format(
         "Start TinyRpc server error, failed to read config file \"{}\"\n",
         xml_file);
     exit(1);
